@@ -25,3 +25,9 @@ variable "metrics" {
   description = "Metrics to monitor"
   type        = list(map(string))
 }
+
+variable "sns_topic_for_alarm_action" {
+  description = "SNS topic to send alarm action"
+  type        = string
+  default     = null
+}

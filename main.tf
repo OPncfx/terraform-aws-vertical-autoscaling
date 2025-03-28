@@ -42,6 +42,7 @@ resource "aws_cloudwatch_metric_alarm" "this" {
   actions_enabled = true
   alarm_actions = [
     module.lambda__this.lambda_function_arn,
+    var.sns_topic_for_alarm_action,
   ]
   alarm_description   = try(each.value.alarm_description, "")
   alarm_name          = try(each.value.alarm_name, "${var.prefix}-${each.value.name}-alarm")
