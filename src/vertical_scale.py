@@ -174,7 +174,7 @@ def lambda_handler(event, context):
 
     logger.info("Lambda function started")
 
-    cpu_threshold = int(os.environ.get("MAX_CPU_THRESHOLD", "0"))
+    cpu_threshold = int(os.environ.get("MAX_CPU_ALLOWED", 100000))
 
 
     cluster_name = event["alarmData"]["configuration"]["metrics"][0]["metricStat"]["metric"]["dimensions"]["ClusterName"]
