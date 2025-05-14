@@ -18,6 +18,10 @@ module "lambda__this" {
     }
   ]
 
+  environment_variables = {
+    MAX_CPU_ALLOWED = var.max_cpu_allowed
+  }
+
   create_package                          = true
   publish                                 = false
   create_current_version_allowed_triggers = true

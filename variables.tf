@@ -31,3 +31,9 @@ variable "sns_topic_for_alarm_action" {
   type        = string
   default     = null
 }
+
+variable "max_cpu_allowed" {
+  description = "Maximum CPU in MiB allowed for the new task definition, if greater, the service will set desired tasks to 0"
+  type        = number
+  default     = 16384
+}

@@ -1,6 +1,7 @@
 import boto3
 import logging
 import datetime
+import os
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -157,9 +158,23 @@ def tag_service(cluster_name, service_name, tags):
     return tag_response
 
 
+### if we exceed the max cpu allowed value, something is wrong and we need to scale down to 0
+def scale_service_to_zero(cluster_name, service_name):
+    ecs = boto3.client('ecs')
+    logger.info(f"Scaling down {service_name} in {cluster_name} to zero tasks.")
+    return ecs.update_service(
+        cluster=cluster_name,
+        service=service_name,
+        desiredCount=0,
+        forceNewDeployment=True
+    )
+
+
 def lambda_handler(event, context):
 
     logger.info("Lambda function started")
+
+    cpu_threshold = int(os.environ.get("MAX_CPU_THRESHOLD", "0"))
 
 
     cluster_name = event["alarmData"]["configuration"]["metrics"][0]["metricStat"]["metric"]["dimensions"]["ClusterName"]
@@ -177,6 +192,12 @@ def lambda_handler(event, context):
         current_memory = int(original_td["memory"])
 
         new_cpu, new_memory = get_next_cpu_combination(current_cpu, current_memory)
+
+        # 2) If next CPU exceeds threshold, scale to zero
+        if new_cpu is None or int(new_cpu) > int(cpu_threshold):
+            scale_service_to_zero(cluster_name, service_name)
+            print(f"Next CPU {new_cpu} > threshold {cpu_threshold}; scaled service down.")
+            return {"status": "scaled_to_zero", "threshold_exceeded": True}
 
         # Step 2: Register a new revision with updated CPU and memory values
         new_td = register_updated_task_definition(original_td, new_cpu, new_memory)
